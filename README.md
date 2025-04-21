@@ -1,12 +1,12 @@
 
 
-### 2. Set Up a Virtual Environment (Recommended)
+### Set Up a Virtual Environment (Recommended)
 ```bash
 python -m venv venv
 source venv/bin/activate    # On Windows: venv\Scripts\activate
 ```
 
-### 3. Install Dependencies
+### Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
