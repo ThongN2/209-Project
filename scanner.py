@@ -14,6 +14,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("vulnerability-scanner")
 
+
 class VulnerabilityScanner:
     def __init__(self, api_key: str, model: str = "gpt-4"):
         self.api_key = api_key
@@ -31,6 +32,13 @@ class VulnerabilityScanner:
             "command_injection": [
                 r"exec\(\s*[\'\"]*.*\+.*[\'\"]",
                 r"os\.system\([^,]*\+[^,]*\)",
+            ],
+            "buffer_overflow": [  
+                r"\bgets\s*\(",
+                r"\bstrcpy\s*\(",
+                r"\bstrcat\s*\(",
+                r"\bsprintf\s*\(",
+                r"\bscanf\s*\(\s*\"%s\""
             ],
         }
 
@@ -59,7 +67,7 @@ class VulnerabilityScanner:
 
     def scan_directory(self, directory_path: str, file_extensions: List[str] = None) -> List[Dict[str, Any]]:
         if file_extensions is None:
-            file_extensions = ['.py', '.js', '.php', '.java', '.cs', '.go']
+            file_extensions = ['.py', '.js', '.php', '.java', '.cs', '.go', '.c', '.cpp']
 
         results = []
         for root, _, files in os.walk(directory_path):
@@ -112,6 +120,7 @@ class VulnerabilityScanner:
 
         Identify potential security vulnerabilities including but not limited to:
         - SQL injection
+        - Buffer Overflow
         - Cross-site scripting (XSS)
         - Command injection
         - Insecure deserialization
@@ -200,7 +209,7 @@ def main():
     parser.add_argument("--api-key", help="OpenAI API key (or leave blank to use openai_config.json)")
     parser.add_argument("--model", default="gpt-4", help="OpenAI model to use")
     parser.add_argument("--output", default="scan_results.json", help="Output file for results")
-    parser.add_argument("--extensions", default=".py,.js,.php,.java,.cs,.go", help="Comma-separated list of file extensions to scan")
+    parser.add_argument("--extensions", default=".py,.js,.php,.java,.cs,.go,.c,.cpp", help="Comma-separated list of file extensions to scan")  # ✅ Added .c and .cpp
     args = parser.parse_args()
 
     api_key = args.api_key
