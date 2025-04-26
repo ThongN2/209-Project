@@ -1,3 +1,5 @@
+# --- Python backend ignores ---
+
 # Python cache
 __pycache__/
 *.py[cod]
@@ -10,18 +12,37 @@ ENV/
 .venv/
 .ENV/
 
-# Editor settings
-.vscode/
-.idea/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs and results
+# Flask server artifacts
 *.log
 scan_results.json
 
-# API keys and configs
+# API keys and sensitive configs
 openai_config.json
 .env
+
+# --- React frontend ignores ---
+
+# Node modules
+frontend/node_modules/
+
+# Build outputs
+frontend/build/
+frontend/.next/
+frontend/.turbo/
+
+# Temp files
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# --- Editor settings ---
+
+# VSCode and IntelliJ project files
+.vscode/
+.idea/
+
+# --- OS generated files ---
+
+.DS_Store
+Thumbs.db

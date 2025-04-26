@@ -1,11 +1,9 @@
+from openai import OpenAI
 import os
 import json
 import re
-import argparse
 import logging
-from pathlib import Path
 from typing import List, Dict, Any
-from openai import OpenAI
 
 # Setup logger
 logging.basicConfig(
@@ -14,12 +12,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger("vulnerability-scanner")
 
-
 class VulnerabilityScanner:
     def __init__(self, api_key: str, model: str = "gpt-4"):
         self.api_key = api_key
         self.model = model
-        self.client = OpenAI(api_key=self.api_key)
+        
+        # CRITICAL FIX: Initialize OpenAI client with ONLY the API key
+        try:
+            self.client = OpenAI(api_key=api_key)  # No other parameters!
+            logger.info("OpenAI client initialized successfully")
+        except Exception as e:
+            logger.error(f"Error initializing OpenAI client: {str(e)}")
+            raise
+
         self.vulnerability_patterns = {
             "sql_injection": [
                 r"execute\(\s*[\'\"]SELECT.*\+.*[\'\"]",
@@ -33,7 +38,7 @@ class VulnerabilityScanner:
                 r"exec\(\s*[\'\"]*.*\+.*[\'\"]",
                 r"os\.system\([^,]*\+[^,]*\)",
             ],
-            "buffer_overflow": [  
+            "buffer_overflow": [
                 r"\bgets\s*\(",
                 r"\bstrcpy\s*\(",
                 r"\bstrcat\s*\(",
@@ -44,15 +49,20 @@ class VulnerabilityScanner:
 
     def scan_file(self, file_path: str) -> Dict[str, Any]:
         logger.info(f"Scanning file: {file_path}")
+
         if not os.path.isfile(file_path):
-            logger.error(f"File does not exist: {file_path}")
             return {"error": f"File does not exist: {file_path}"}
 
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 code = f.read()
+        except UnicodeDecodeError:
+            try:
+                with open(file_path, 'r', encoding='latin-1') as f:
+                    code = f.read()
+            except Exception as e:
+                return {"error": f"Error reading file: {str(e)}"}
         except Exception as e:
-            logger.error(f"Error reading file {file_path}: {str(e)}")
             return {"error": f"Error reading file: {str(e)}"}
 
         pattern_results = self._detect_patterns(code)
@@ -64,18 +74,6 @@ class VulnerabilityScanner:
             "llm_results": llm_results,
             "recommendations": self._generate_recommendations(llm_results)
         }
-
-    def scan_directory(self, directory_path: str, file_extensions: List[str] = None) -> List[Dict[str, Any]]:
-        if file_extensions is None:
-            file_extensions = ['.py', '.js', '.php', '.java', '.cs', '.go', '.c', '.cpp']
-
-        results = []
-        for root, _, files in os.walk(directory_path):
-            for file in files:
-                if any(file.endswith(ext) for ext in file_extensions):
-                    file_path = os.path.join(root, file)
-                    results.append(self.scan_file(file_path))
-        return results
 
     def _detect_patterns(self, code: str) -> Dict[str, List[Dict[str, Any]]]:
         results = {}
@@ -112,51 +110,64 @@ class VulnerabilityScanner:
         prompt = f"""
         Analyze this code for security vulnerabilities:
 
-        ```
-        {code_excerpt}
-        ```
+        
+{code_excerpt}
+
 
         {pattern_info}
 
-        Identify potential security vulnerabilities including but not limited to:
-        - SQL injection
+        Identify potential vulnerabilities including:
+        - SQL Injection
         - Buffer Overflow
         - Cross-site scripting (XSS)
-        - Command injection
-        - Insecure deserialization
-        - Weak cryptography
-        - Hardcoded credentials
-        - Race conditions
-        - Path traversal
+        - Command Injection
+        - Path Traversal
+        - Insecure Deserialization
+        - Weak Cryptography
+        - Hardcoded Credentials
+        - Race Conditions
 
-        Format your response ONLY as raw JSON, without explanation or formatting. Do NOT include Markdown or code blocks.
-
-        JSON fields:
-        - vulnerabilities: [Array of identified vulnerabilities with type, severity, line_numbers, and description]
-        - risk_score: Overall risk score from 1-10
-        - analysis_confidence: Confidence in analysis from 1-10
-        - summary: Brief textual summary of findings
+        Output ONLY raw JSON with fields:
+        vulnerabilities, risk_score, analysis_confidence, summary.
         """
 
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
-                messages=[{"role": "user", "content": prompt}],
+                messages=[
+                    {"role": "user", "content": prompt}
+                ],
                 temperature=0.1,
                 max_tokens=1500
             )
 
             content = response.choices[0].message.content
             logger.info(f"Raw LLM response:\n{content}")
-            result = json.loads(content)
-            return result
+            
+            try:
+                result = json.loads(content)
+                return result
+            except json.JSONDecodeError:
+                # Try to extract JSON from the response
+                content = content.strip()
+                json_start = content.find('{')
+                json_end = content.rfind('}') + 1
+                if json_start >= 0 and json_end > json_start:
+                    try:
+                        json_content = content[json_start:json_end]
+                        result = json.loads(json_content)
+                        return result
+                    except:
+                        pass
+                        
+                # If JSON extraction fails, return a fallback
+                return {
+                    "vulnerabilities": [],
+                    "risk_score": 0,
+                    "analysis_confidence": 0,
+                    "summary": "Failed to parse LLM response as JSON. Raw response: " + content[:100] + "..."
+                }
 
-        except json.JSONDecodeError as e:
-            logger.error(f"Error decoding JSON from LLM response: {str(e)}")
-            return {
-                "error": "Failed to parse LLM response",
-                "raw_response": content
-            }
         except Exception as e:
             logger.error(f"Error calling OpenAI API: {str(e)}")
             return {"error": f"LLM analysis failed: {str(e)}"}
@@ -199,56 +210,6 @@ class VulnerabilityScanner:
                         "https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html"
                     ]
                 })
+            # More recommendations as needed...
 
         return recommendations
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Automated Vulnerability Scanning Tool")
-    parser.add_argument("--path", required=True, help="Path to file or directory to scan")
-    parser.add_argument("--api-key", help="OpenAI API key (or leave blank to use openai_config.json)")
-    parser.add_argument("--model", default="gpt-4", help="OpenAI model to use")
-    parser.add_argument("--output", default="scan_results.json", help="Output file for results")
-    parser.add_argument("--extensions", default=".py,.js,.php,.java,.cs,.go,.c,.cpp", help="Comma-separated list of file extensions to scan")  # ✅ Added .c and .cpp
-    args = parser.parse_args()
-
-    api_key = args.api_key
-    if not api_key:
-        try:
-            with open("openai_config.json", "r") as f:
-                config = json.load(f)
-                api_key = config.get("api_key")
-        except Exception as e:
-            logger.error(f"No API key provided and failed to load openai_config.json: {e}")
-            return
-
-    scanner = VulnerabilityScanner(api_key, args.model)
-    path = Path(args.path)
-
-    if path.is_file():
-        results = [scanner.scan_file(str(path))]
-    elif path.is_dir():
-        extensions = args.extensions.split(",")
-        results = scanner.scan_directory(str(path), extensions)
-    else:
-        logger.error(f"Path does not exist: {args.path}")
-        return
-
-    with open(args.output, 'w') as f:
-        json.dump(results, f, indent=2)
-
-    logger.info(f"Scan complete. Results written to {args.output}")
-
-    total_vulnerabilities = sum(
-        len(r.get("llm_results", {}).get("vulnerabilities", []))
-        for r in results if "error" not in r
-    )
-
-    print(f"\nScan Summary:")
-    print(f"Files scanned: {len(results)}")
-    print(f"Vulnerabilities found: {total_vulnerabilities}")
-    print(f"Full results saved to: {args.output}")
-
-
-if __name__ == "__main__":
-    main()
