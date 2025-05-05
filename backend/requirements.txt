@@ -3,7 +3,8 @@ python-dotenv==1.0.1
 requests==2.32.2
 flask==3.0.2
 sentence-transformers==2.6.1
-faiss-cpu==1.7.4
+# faiss-cpu==1.7.4
 PyPDF2==3.0.1
 numpy==1.26.4
-
+faiss-cpu
+flask-cors==4.0.0

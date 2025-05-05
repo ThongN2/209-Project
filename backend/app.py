@@ -5,6 +5,7 @@ import json
 import logging
 import traceback
 from scanner import VulnerabilityScanner
+from rag_loader import retrieve_extra_explanation
 
 # Setup logging
 logging.basicConfig(
@@ -21,7 +22,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-ALLOWED_EXTENSIONS = {'.py', '.js', '.php', '.java', '.cs', '.go', '.c', '.cpp', '.rb', '.ts'}
+ALLOWED_EXTENSIONS = {'.py', '.js', '.php', '.java', '.cs', '.go', '.c', '.cpp', '.rb', '.ts', '.txt'}
 
 # Load OpenAI API Key
 def load_api_key():
@@ -102,6 +103,21 @@ def deep_analysis():
     except Exception as e:
         logger.error(f"Error during deep analysis: {str(e)}")
         logger.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
+    
+# NEW: RAG endpoint to search documentation
+@app.route("/rag_explanation", methods=["POST"])
+def rag_explanation():
+    try:
+        data = request.json
+        query = data.get("query", "")
+        if not query:
+            return jsonify({"error": "No query provided"}), 400
+
+        results = retrieve_extra_explanation(query)
+        return jsonify({"chunks": results})
+    except Exception as e:
+        logger.error(f"Error during RAG explanation: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":

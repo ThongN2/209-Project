@@ -14,13 +14,14 @@ class RagBuilder:
         self.chunks = []
 
     def clean_text(self, text: str) -> str:
-        text = re.sub(r'COMPUTER ENGINEERING CMPE 209 Dr\\.Park\\d+ Running Footer.*', '', text)
-        text = re.sub(r'Page \\d+.*', '', text)
-        text = re.sub(r'\\n\\s*\\n', '\\n', text)
+        # Remove CMPE 209 footer or page headers if present
+        text = re.sub(r'COMPUTER ENGINEERING CMPE 209 Dr\.Park\d* Running Footer.*', '', text)
+        text = re.sub(r'Page \d+.*', '', text)
+        text = re.sub(r'\n\s*\n', '\n', text)
         return text.strip()
 
     def split_into_chunks(self, text: str, max_length: int = 500) -> list:
-        paragraphs = text.split('\\n')
+        paragraphs = text.split('\n')
         chunks = []
         current_chunk = ''
         for para in paragraphs:
@@ -42,7 +43,7 @@ class RagBuilder:
         for page in reader.pages:
             text = page.extract_text()
             if text:
-                full_text += text + '\\n'
+                full_text += text + '\n'
         clean = self.clean_text(full_text)
         chunks = self.split_into_chunks(clean)
         self.chunks.extend(chunks)
@@ -51,8 +52,8 @@ class RagBuilder:
         save_path = os.path.join(self.chunk_folder, base_name)
         with open(save_path, 'w', encoding='utf-8') as f:
             for chunk in chunks:
-                f.write(chunk + '\\n\\n')
-        print(f"Processed and saved chunks: {save_path}")
+                f.write(chunk + '\n\n')
+        print(f"✅ Processed and saved chunks: {save_path}")
 
     def build_faiss_index(self, index_save_path: str):
         embeddings = self.model.encode(self.chunks)
@@ -60,14 +61,14 @@ class RagBuilder:
         index = faiss.IndexFlatL2(dim)
         index.add(np.array(embeddings, dtype=np.float32))
         faiss.write_index(index, index_save_path)
-        print(f"Saved FAISS index: {index_save_path}")
+        print(f"✅ Saved FAISS index: {index_save_path}")
 
-# Example usage
+# Example usage for manual testing
 if __name__ == "__main__":
-    base = "backend/data"  # Update if your PDFs are in another folder
+    base = os.path.join(os.path.dirname(__file__), "data")  # Always use relative path from script
     builder = RagBuilder(base_folder=base)
 
     builder.process_pdf(os.path.join(base, 'Malware.pdf'))
-    builder.process_pdf(os.path.join(base, "BufferOverFlow.pdf"))
+    builder.process_pdf(os.path.join(base, 'BufferOverFlow.pdf'))
 
     builder.build_faiss_index(os.path.join(base, "faiss_index"))

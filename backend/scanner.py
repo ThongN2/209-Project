@@ -1,3 +1,4 @@
+# import openai
 from openai import OpenAI
 import os
 import json
@@ -17,6 +18,7 @@ class VulnerabilityScanner:
     def __init__(self, api_key: str, model: str = "gpt-4"):
         try:
             self.client = OpenAI(api_key=api_key)
+
             self.model = model
             logger.info("OpenAI client initialized successfully")
         except Exception as e:
@@ -116,6 +118,14 @@ class VulnerabilityScanner:
                     pattern_info += f"  - Match {i+1} (line {match['line']}): {match['match']}\n"
                 if len(matches) > 3:
                     pattern_info += f"  - ... and {len(matches) - 3} more\n"
+        
+        # Retrieve relevant context from RAG
+        rag_context = ""
+        for vuln_type in pattern_results.keys():
+            chunks = retrieve_extra_explanation(vuln_type)
+            if chunks:
+                rag_context += f"\n## {vuln_type.upper()} Context\n" + "\n".join(chunks[:2]) + "\n"
+        
 
         prompt = f"""
 Analyze this code for security vulnerabilities:
@@ -281,8 +291,13 @@ summary: "brief overview of findings".
         Perform a deeper, second-level LLM analysis on the uploaded code.
         This returns a professional security report in Markdown.
         """
+        rag_chunks = retrieve_extra_explanation("security audit")
+        rag_context = "\n".join(rag_chunks[:3]) if rag_chunks else ""
         prompt = f"""
 You are a cybersecurity expert. Perform a deep security audit of the following code.
+
+Reference context from known cybersecurity documents:
+{rag_context}
 
 Analyze and explain:
 - Rare and advanced security vulnerabilities
@@ -292,7 +307,7 @@ Analyze and explain:
 - Real-world attack scenarios and exploitation risks
 - Best practice improvements and recommendations
 
-Generate a professional and detailed security report in **Markdown** format.
+Generate a professional and detailed security report in **Markdown*
 
 Code:
 {code}

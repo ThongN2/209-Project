@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RAG Security Knowledge Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      max-width: 800px;
+    }
+    input, button {
+      font-size: 1em;
+      padding: 10px;
+      margin-right: 10px;
+    }
+    #rag-results {
+      margin-top: 30px;
+      white-space: pre-wrap;
+      border-top: 1px solid #ccc;
+      padding-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🔍 Ask a Cybersecurity Question</h2>
+  <input type="text" id="rag-query" placeholder="e.g. What is XSS?" size="50">
+  <button onclick="searchRag()">Search</button>
+
+  <div id="rag-results"></div>
+
+  <script>
+    async function searchRag() {
+      const query = document.getElementById("rag-query").value;
+      const outputDiv = document.getElementById("rag-results");
+      outputDiv.innerHTML = "Loading...";
+
+      try {
+        const response = await fetch("http://localhost:5000/rag_explanation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          outputDiv.innerHTML = "❌ Error: " + data.error;
+        } else if (data.chunks.length === 0) {
+          outputDiv.innerHTML = "⚠️ No relevant information found.";
+        } else {
+          outputDiv.innerHTML = data.chunks
+            .map(chunk => `<div style="margin-bottom: 20px;">${chunk}</div>`)
+            .join("<hr>");
+        }
+      } catch (err) {
+        outputDiv.innerHTML = "⚠️ Failed to connect to the server.";
+      }
+    }
+  </script>
+</body>
+</html>
