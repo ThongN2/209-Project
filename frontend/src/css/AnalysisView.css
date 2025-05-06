@@ -90,6 +90,45 @@
   margin-top: 5px;
 }
 
+/* Uploaded Code Section */
+.uploaded-code pre {
+  background: #0f172a;
+  color: #e0f2fe;
+  padding: 15px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  overflow-x: auto;
+  font-family: monospace;
+  line-height: 1.5;
+  max-height: 400px;
+}
+
+.uploaded-code pre code {
+  display: block;
+}
+
+/* Scrollbar for Uploaded Code */
+.uploaded-code pre::-webkit-scrollbar {
+  height: 10px;
+}
+
+.uploaded-code pre::-webkit-scrollbar-track {
+  background: #1e293b;
+  border-radius: 5px;
+}
+
+.uploaded-code pre::-webkit-scrollbar-thumb {
+  background-color: #475569;
+  border-radius: 6px;
+  border: 2px solid #1e293b;
+}
+
+/* Firefox scrollbar */
+.uploaded-code pre {
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #1e293b;
+}
+
 /* Button Group */
 .button-group {
   text-align: center;
@@ -175,7 +214,7 @@
   margin-top: 20px;
 }
 
-/* Custom scrollbar for answer section */
+/* Scrollbar for answer section */
 .answer-section::-webkit-scrollbar {
   width: 10px;
 }
@@ -191,7 +230,7 @@
   border: 2px solid #1e293b;
 }
 
-/* Firefox support */
+/* Firefox scrollbar */
 .answer-section {
   scrollbar-width: thin;
   scrollbar-color: #475569 #1e293b;

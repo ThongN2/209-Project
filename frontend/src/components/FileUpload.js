@@ -66,7 +66,10 @@ function FileUpload() {
       });
 
       console.log('Scan Result:', response.data);
+
+      // ✅ store entire result including file_content & remediated_file_content
       setScanResult(response.data);
+
       localStorage.setItem('scanResult', JSON.stringify(response.data));
     } catch (error) {
       console.error('Upload failed:', error);
@@ -96,7 +99,7 @@ function FileUpload() {
   };
 
   return (
-    <div style={{ padding: 30, maxWidth: '800px', margin: '0 auto', color: '#fff', fontFamily: 'Arial, sans-serif' }}>
+    <div style={{ padding: 30, maxWidth: '900px', margin: '0 auto', color: '#fff', fontFamily: 'Arial, sans-serif' }}>
       <h1 style={{ textAlign: 'center', marginBottom: 20 }}>🛡️ Vulnerability Scanner</h1>
 
       <div style={{ backgroundColor: serverStatus === 'Connected' ? '#14532d' : '#7f1d1d', padding: 10, borderRadius: 6, marginBottom: 20, textAlign: 'center' }}>
@@ -146,7 +149,7 @@ function FileUpload() {
 
       {scanResult && (
         <div style={{ marginTop: 30 }}>
-          <h2>🧠 Brief Summary</h2>
+          <h2>🔍 Scan Summary</h2>
           <p style={{ backgroundColor: '#334155', padding: 10, borderRadius: 6 }}>
             {scanResult.brief_summary || "No summary available."}
           </p>
@@ -167,6 +170,17 @@ function FileUpload() {
           >
             {deepLoading ? 'Requesting Deep Analysis...' : 'Request Deeper Analysis'}
           </button>
+
+          {scanResult.file_content && (
+            <div style={{ marginTop: 30 }}>
+              <h2>📄 Original File Content</h2>
+              <pre style={{ backgroundColor: '#1e293b', padding: 10, borderRadius: 6, whiteSpace: 'pre-wrap' }}>
+                {scanResult.file_content}
+              </pre>
+            </div>
+          )}
+
+        
         </div>
       )}
     </div>

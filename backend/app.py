@@ -6,6 +6,7 @@ import logging
 import traceback
 from scanner import VulnerabilityScanner
 from rag_loader import retrieve_extra_explanation
+from vulnerability_db import VulnerabilityDatabase  
 
 # Setup logging
 logging.basicConfig(
@@ -19,12 +20,12 @@ logger = logging.getLogger("vulnerability-scanner-server")
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-UPLOAD_FOLDER = "uploads"
+UPLOAD_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'uploads'))
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {'.py', '.js', '.php', '.java', '.cs', '.go', '.c', '.cpp', '.rb', '.ts', '.txt'}
 
-# Load OpenAI API Key
 def load_api_key():
     config_path = os.path.join(os.path.dirname(__file__), "openai_config.json")
     try:
@@ -75,14 +76,70 @@ def upload_file():
         file.save(file_path)
         logger.info(f"File uploaded: {file_path}")
 
+        # ✅ scan the file
         scanner = VulnerabilityScanner(api_key=OPENAI_API_KEY)
         result = scanner.scan_file(file_path)
 
-        os.remove(file_path)  # Clean up
+        # ✅ read the file content
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                file_content = f.read()
+            result["file_content"] = file_content
+        except Exception as read_err:
+            logger.warning(f"Could not read file content: {str(read_err)}")
+            result["file_content"] = ""
+
+        # ✅ OPTIONAL: generate remediated code
+        try:
+            db = VulnerabilityDatabase()  # assumes your db class is importable
+            pattern_matches = []
+            for vuln_type, matches in result.get("pattern_results", {}).items():
+                for match in matches:
+                    pattern_matches.append({
+                        "pattern": vuln_type,
+                        "match": match
+                    })
+
+            remediated_code = db.apply_remediation(file_content, pattern_matches)
+            result["remediated_file_content"] = remediated_code
+        except Exception as patch_err:
+            logger.warning(f"Could not generate remediated code: {str(patch_err)}")
+            result["remediated_file_content"] = ""
+
+        # ✅ delete uploaded file after processing
+        try:
+            os.remove(file_path)
+            logger.info(f"Deleted uploaded file: {file_path}")
+        except Exception as delete_err:
+            logger.warning(f"Could not delete uploaded file: {str(delete_err)}")
+
         return jsonify(result)
 
     except Exception as e:
         logger.error(f"Unhandled exception during upload: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/get_file_content", methods=["GET"])
+def get_file_content():
+    # you may no longer need this endpoint if upload returns content
+    try:
+        filename = request.args.get("filename")
+        if not filename:
+            return jsonify({"error": "Filename is required."}), 400
+
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        if not os.path.isfile(file_path):
+            return jsonify({"error": "File not found."}), 404
+
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+
+        os.remove(file_path)  # ✅ delete AFTER reading
+        return jsonify({"file_content": content})
+
+    except Exception as e:
+        logger.error(f"Error reading file content: {str(e)}")
         logger.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
@@ -104,8 +161,7 @@ def deep_analysis():
         logger.error(f"Error during deep analysis: {str(e)}")
         logger.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
-    
-# NEW: RAG endpoint to search documentation
+
 @app.route("/rag_explanation", methods=["POST"])
 def rag_explanation():
     try:
