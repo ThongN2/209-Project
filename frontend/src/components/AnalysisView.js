@@ -26,7 +26,11 @@ function AnalysisView() {
   const { brief_summary, llm_results, pattern_results, recommendations } = scanResult;
 
   return (
-    <div className="analysis-container">
+    <>
+      <header className="page-header">
+        <h1>🛡️ Vulnerability Scanner</h1>
+      </header>
+      <div className="analysis-container">
       <h1 className="page-title">🧠 Detailed Analysis</h1>
 
       {/* Summary */}
@@ -187,6 +191,10 @@ function AnalysisView() {
         </div>
       )}
     </div>
+      <footer className="page-footer">
+        <p>&copy; 2025 Security Scanner Team</p>
+      </footer>
+    </>
   );
 }
 

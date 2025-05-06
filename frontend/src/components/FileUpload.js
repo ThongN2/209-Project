@@ -96,10 +96,12 @@ function FileUpload() {
   };
 
   return (
-    <div style={{ padding: 30, maxWidth: '800px', margin: '0 auto', color: '#fff', fontFamily: 'Arial, sans-serif' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: 20 }}>🛡️ Vulnerability Scanner</h1>
+    <>
+      <header className="page-header">
+        <h1>🛡️ Vulnerability Scanner</h1>
+      </header>
 
-      <div style={{ backgroundColor: serverStatus === 'Connected' ? '#14532d' : '#7f1d1d', padding: 10, borderRadius: 6, marginBottom: 20, textAlign: 'center' }}>
+      <div style={{ backgroundColor: serverStatus === 'Connected' ? '#14532d' : '#7f1d1d', padding: 10, borderRadius: 6, marginBottom: 20, textAlign: 'center', fontSize: '1.25rem',}}>
         Server Status: {serverStatus}
       </div>
 
@@ -109,15 +111,21 @@ function FileUpload() {
         onDragLeave={handleDragLeave}
         style={{
           border: dragActive ? '2px dashed #3b82f6' : '2px dashed #666',
-          padding: '30px',
-          borderRadius: '10px',
-          textAlign: 'center',
-          marginBottom: '20px',
-          backgroundColor: dragActive ? '#1e293b' : '#111827',
+            padding: '50px',
+            borderRadius: '10px',
+            textAlign: 'center',
+            marginBottom: '20px',
+            backgroundColor: dragActive ? '#1e293b' : '#111827',
+            minHeight: '200px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.25rem',
         }}
       >
-        <p>{file ? `Selected: ${file.name}` : 'Drag & drop your file here or click to browse'}</p>
-        <input type="file" onChange={handleFileChange} style={{ marginTop: 10 }} />
+        <p style={{textAlign: 'center'}}>{file ? `Selected: ${file.name}` : 'Drag & drop your file here or click to browse'}</p>
+        <input type="file" onChange={handleFileChange} style={{ marginTop: 10, fontSize: '1.1rem', }} />
       </div>
 
       <div style={{ display: 'flex', gap: '10px' }}>
@@ -132,6 +140,7 @@ function FileUpload() {
             borderRadius: 5,
             cursor: loading || !file ? 'not-allowed' : 'pointer',
             opacity: loading || !file ? 0.6 : 1,
+            fontSize: '1.25rem',
           }}
         >
           {loading ? 'Uploading...' : 'Upload and Scan'}
@@ -168,8 +177,22 @@ function FileUpload() {
             {deepLoading ? 'Requesting Deep Analysis...' : 'Request Deeper Analysis'}
           </button>
         </div>
+        
       )}
-    </div>
+      <footer className="page-footer" style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              marginTop: 10,
+              color: '#fff',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: 5,
+            }}>
+        <p>&copy; 2025 Security Scanner Team</p>
+      </footer>
+    </>
   );
 }
 
