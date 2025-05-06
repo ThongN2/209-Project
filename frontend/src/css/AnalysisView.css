@@ -196,3 +196,10 @@
   scrollbar-width: thin;
   scrollbar-color: #475569 #1e293b;
 }
+
+.answer-section div {
+  line-height: 1.6;
+  font-size: 0.95rem;
+  padding: 8px 0;
+  white-space: pre-line;
+}
