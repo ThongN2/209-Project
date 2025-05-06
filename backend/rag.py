@@ -14,7 +14,6 @@ class RagBuilder:
         self.chunks = []
 
     def clean_text(self, text: str) -> str:
-        # Remove CMPE 209 footer or page headers if present
         text = re.sub(r'COMPUTER ENGINEERING CMPE 209 Dr\.Park\d* Running Footer.*', '', text)
         text = re.sub(r'Page \d+.*', '', text)
         text = re.sub(r'\n\s*\n', '\n', text)
@@ -63,9 +62,8 @@ class RagBuilder:
         faiss.write_index(index, index_save_path)
         print(f"✅ Saved FAISS index: {index_save_path}")
 
-# Example usage for manual testing
 if __name__ == "__main__":
-    base = os.path.join(os.path.dirname(__file__), "data")  # Always use relative path from script
+    base = os.path.join(os.path.dirname(__file__), "data")
     builder = RagBuilder(base_folder=base)
 
     builder.process_pdf(os.path.join(base, 'Malware.pdf'))

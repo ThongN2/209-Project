@@ -1,0 +1,83 @@
+[33mcommit 65a39f5bbb607394e0f7d5b5d249e06d3669d84d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/ui-update[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Kar-Sha <76408122+Kar-Sha@users.noreply.github.com>
+Date:   Mon May 5 19:25:36 2025 -0700
+
+    added better spacing for answer section
+
+[33mcommit 007a8df03d3aea627750ae673c14750c36ff8436[m
+Author: Kar-Sha <76408122+Kar-Sha@users.noreply.github.com>
+Date:   Mon May 5 19:20:57 2025 -0700
+
+    updated ui
+
+[33mcommit 43d3eb9ff06c56bba4cdd569d20aebe3cdff3d68[m
+Author: Thong Nguyen <thong.nguyen01@sjsu.edu>
+Date:   Mon May 5 00:57:53 2025 -0700
+
+    updated frontend
+
+[33mcommit 0ac94d4ce02b1fe9bfcf7327d5f01c583a877eae[m
+Author: CongDinh92891992 <congdinh9289@gmail.com>
+Date:   Sun May 4 22:01:39 2025 -0700
+
+    Add RAG integration with frontend search
+
+[33mcommit 7c08614749130a23f1bd879f0a8e8cd141763d25[m
+Author: Thong Nguyen <thong.nguyen01@sjsu.edu>
+Date:   Sun Apr 27 22:06:42 2025 -0700
+
+    Added RAG
+
+[33mcommit 0bd16c70aa238402d72178826fbbe4778beb1014[m
+Author: Thong Nguyen <thong.nguyen01@sjsu.edu>
+Date:   Fri Apr 25 22:46:45 2025 -0700
+
+    updated dependencies
+
+[33mcommit 24da5f5ea4db7838dc65ced0308c869ba31cd7c3[m
+Author: Thong Nguyen <thong.nguyen01@sjsu.edu>
+Date:   Fri Apr 25 22:37:04 2025 -0700
+
+     updated dependencies
+
+[33mcommit 3ff0e17bbfb65ca7ecb3dd3ae7a3c81ef628bf3b[m
+Author: ThongN2 <79027915+ThongN2@users.noreply.github.com>
+Date:   Fri Apr 25 21:44:26 2025 -0700
+
+    Update README.md
+
+[33mcommit 415f71af040360a4d1014105fd35a624fa66a9f3[m
+Author: Thong Nguyen <thong.nguyen01@sjsu.edu>
+Date:   Fri Apr 25 21:39:34 2025 -0700
+
+    Added a basic frontend
+
+[33mcommit 2c6423dd993cd3e97fbb01aae3e707d3f15b560b[m
+Author: Thong Nguyen <thong.nguyen01@sjsu.edu>
+Date:   Fri Apr 25 20:53:03 2025 -0700
+
+    Added support for buffer overflow attack
+
+[33mcommit d23202813cebd6876807d7ba87fc0c3fa1fe4630[m
+Author: ThongN2 <79027915+ThongN2@users.noreply.github.com>
+Date:   Sun Apr 20 23:39:58 2025 -0700
+
+    Update README.md
+
+[33mcommit 0c76d45605d1b05b409401f73f5493e21144e4ad[m
+Author: ThongN2 <79027915+ThongN2@users.noreply.github.com>
+Date:   Sun Apr 20 23:39:32 2025 -0700
+
+    Update README.md
+
+[33mcommit 032d472fdcbc50b25420b3c6442d102adbf4bfdf[m
+Author: Thong Nguyen <thong.nguyen01@sjsu.edu>
+Date:   Sun Apr 20 23:35:26 2025 -0700
+
+    backend
+
+[33mcommit c4b0d0d1ddcc391140145e9cc036c7b67dd22c32[m
+Author: Thong Nguyen <thong.nguyen01@sjsu.edu>
+Date:   Sun Apr 20 23:33:33 2025 -0700
+
+    Initial commit

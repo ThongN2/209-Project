@@ -5,7 +5,8 @@ import json
 import logging
 import traceback
 from scanner import VulnerabilityScanner
-from rag_loader import retrieve_extra_explanation
+from rag_loader import get_simplified_answers
+
 from vulnerability_db import VulnerabilityDatabase  
 
 # Setup logging
@@ -163,6 +164,8 @@ def deep_analysis():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/rag_explanation", methods=["POST"])
+# ✅ RAG endpoint: simplified GPT summaries per chunk
+@app.route("/rag_explanation", methods=["POST"])
 def rag_explanation():
     try:
         data = request.json
@@ -170,10 +173,11 @@ def rag_explanation():
         if not query:
             return jsonify({"error": "No query provided"}), 400
 
-        results = retrieve_extra_explanation(query)
+        results = get_simplified_answers(query)
         return jsonify({"chunks": results})
     except Exception as e:
         logger.error(f"Error during RAG explanation: {e}")
+        logger.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":

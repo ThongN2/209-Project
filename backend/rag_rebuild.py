@@ -2,24 +2,22 @@ import os
 from rag import RagBuilder
 
 def rebuild_faiss_if_needed():
-    # Use absolute path to backend/data
     base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
     index_path = os.path.join(base, "faiss_index")
     chunk_folder = os.path.join(base, "rag_chunks")
 
     os.makedirs(base, exist_ok=True)
 
-    # Find PDF files to process
     pdfs = [f for f in os.listdir(base) if f.lower().endswith('.pdf')]
     chunks_exist = os.path.exists(chunk_folder) and len(os.listdir(chunk_folder)) >= len(pdfs)
 
     if not os.path.exists(index_path) or not chunks_exist:
-        print("🛠️ Rebuilding FAISS index...")
+        print("🛠️ Rebuilding FAISS index.")
         builder = RagBuilder(base_folder=base)
         for pdf_file in pdfs:
             pdf_path = os.path.join(base, pdf_file)
             builder.process_pdf(pdf_path)
-        builder.build_faiss_index(index_path)  # ✅ Fixed: pass required path
+        builder.build_faiss_index(index_path)
         print("✅ Rebuild complete.")
     else:
         print("✅ FAISS index is up-to-date.")
