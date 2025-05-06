@@ -156,7 +156,7 @@ function FileUpload() {
       {scanResult && (
         <div style={{ marginTop: 30 }}>
           <h2>🧠 Brief Summary</h2>
-          <p style={{ backgroundColor: '#334155', padding: 10, borderRadius: 6 }}>
+          <p style={{ backgroundColor: '#334155', padding: 10, borderRadius: 6, fontSize: '1.1rem', }}>
             {scanResult.brief_summary || "No summary available."}
           </p>
 
@@ -166,6 +166,7 @@ function FileUpload() {
             style={{
               marginTop: 10,
               backgroundColor: '#10b981',
+              fontSize: '1.1rem',
               color: '#fff',
               padding: '10px 20px',
               border: 'none',

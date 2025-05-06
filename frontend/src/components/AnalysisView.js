@@ -37,7 +37,7 @@ function AnalysisView() {
       <section className="card-section">
         <div className="card">
           <h2>🔍 Summary</h2>
-          <p className="summary-box">{brief_summary || 'No summary available.'}</p>
+          <p className="summary-box" style={{fontSize: '1.1rem',}}>{brief_summary || 'No summary available.'}</p>
         </div>
       </section>
 
@@ -67,7 +67,7 @@ function AnalysisView() {
               </tbody>
             </table>
           ) : (
-            <p>No vulnerabilities found.</p>
+            <p style={{fontSize: '1.1rem',}}>No vulnerabilities found.</p>
           )}
         </div>
       </section>
@@ -95,7 +95,7 @@ function AnalysisView() {
               </div>
             ))
           ) : (
-            <p>No recommendations available.</p>
+            <p style={{fontSize: '1.1rem',}}>No recommendations available.</p>
           )}
         </div>
       </section>
@@ -118,15 +118,15 @@ function AnalysisView() {
               </div>
             ))
           ) : (
-            <p>No pattern matches found.</p>
+            <p style={{fontSize: '1.1rem',}}>No pattern matches found.</p>
           )}
         </div>
       </section>
 
       {/* Buttons */}
       <div className="button-group">
-        <button className="btn btn-back" onClick={() => navigate('/')}>🔙 Back to Upload</button>
-        <button className="btn btn-question" onClick={() => setShowQuestionModal(true)}>❓ Ask a Security Question</button>
+        <button className="btn btn-back" style={{fontSize: '1.25rem',}} onClick={() => navigate('/')}>🔙 Back to Upload</button>
+        <button className="btn btn-question" style={{fontSize: '1.25rem',}} onClick={() => setShowQuestionModal(true)}>❓ Ask a Security Question</button>
       </div>
 
       {/* Modal */}
@@ -142,7 +142,7 @@ function AnalysisView() {
             />
 
             <div className="modal-actions" style={{ justifyContent: 'center' }}>
-              <button className="btn btn-submit" onClick={async () => {
+              <button className="btn btn-submit" style={{fontSize: '1.1rem',}} onClick={async () => {
                 setAnswerLoading(true);
                 setAnswerError('');
                 setAnswerChunks([]);
@@ -169,7 +169,7 @@ function AnalysisView() {
                   setAnswerLoading(false);
                 }
               }}>Submit</button>
-              <button className="btn btn-cancel" onClick={() => {
+              <button className="btn btn-cancel" style={{fontSize: '1.1rem',}} onClick={() => {
                 setShowQuestionModal(false);
                 setSecurityQuestion('');
                 setAnswerChunks([]);
@@ -191,7 +191,17 @@ function AnalysisView() {
         </div>
       )}
     </div>
-      <footer className="page-footer">
+    <footer className="page-footer" style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              marginTop: 10,
+              color: '#fff',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: 5,
+            }}>
         <p>&copy; 2025 Security Scanner Team</p>
       </footer>
     </>
