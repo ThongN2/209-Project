@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../css/AnalysisView.css'; // make sure this path is correct!
 
 function AnalysisView() {
   const [scanResult, setScanResult] = useState(null);
+  const [showQuestionModal, setShowQuestionModal] = useState(false);
+  const [securityQuestion, setSecurityQuestion] = useState('');
+  const [answerLoading, setAnswerLoading] = useState(false);
+  const [answerError, setAnswerError] = useState('');
+  const [answerChunks, setAnswerChunks] = useState([]);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,37 +26,35 @@ function AnalysisView() {
   const { brief_summary, llm_results, pattern_results, recommendations } = scanResult;
 
   return (
-    <div style={{ padding: 20, maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="analysis-container">
       <h1>Detailed Analysis</h1>
 
       {/* Summary */}
-      <section style={{ marginBottom: 30 }}>
+      <section className="section">
         <h2>🔍 Summary</h2>
-        <p style={{ backgroundColor: '#e2e3e5', padding: 10, borderRadius: 4 }}>
-          {brief_summary || 'No summary available.'}
-        </p>
+        <p className="summary-box">{brief_summary || 'No summary available.'}</p>
       </section>
 
       {/* Vulnerabilities */}
-      <section style={{ marginBottom: 30 }}>
+      <section className="section">
         <h2>🚨 Vulnerabilities Found</h2>
         {llm_results?.vulnerabilities && llm_results.vulnerabilities.length > 0 ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="vuln-table">
             <thead>
-              <tr style={{ backgroundColor: '#f0f0f0' }}>
-                <th style={thStyle}>Type</th>
-                <th style={thStyle}>Location</th>
-                <th style={thStyle}>Severity</th>
-                <th style={thStyle}>Description</th>
+              <tr>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Severity</th>
+                <th>Description</th>
               </tr>
             </thead>
             <tbody>
               {llm_results.vulnerabilities.map((vuln, idx) => (
                 <tr key={idx}>
-                  <td style={tdStyle}>{vuln.type}</td>
-                  <td style={tdStyle}>{vuln.location}</td>
-                  <td style={tdStyle}>{vuln.severity}</td>
-                  <td style={tdStyle}>{vuln.description}</td>
+                  <td>{vuln.type}</td>
+                  <td>{vuln.location}</td>
+                  <td>{vuln.severity}</td>
+                  <td>{vuln.description}</td>
                 </tr>
               ))}
             </tbody>
@@ -60,11 +65,11 @@ function AnalysisView() {
       </section>
 
       {/* Recommendations */}
-      <section style={{ marginBottom: 30 }}>
+      <section className="section">
         <h2>🛡️ Recommendations</h2>
         {recommendations && recommendations.length > 0 ? (
           recommendations.map((rec, idx) => (
-            <div key={idx} style={{ backgroundColor: '#f8f9fa', padding: 15, borderRadius: 6, marginBottom: 20 }}>
+            <div key={idx} className="recommendation-box">
               <h3>{rec.vulnerability_type}</h3>
               <p><strong>Recommendation:</strong> {rec.recommendation}</p>
               <p><strong>Example:</strong> <code>{rec.code_example}</code></p>
@@ -85,18 +90,18 @@ function AnalysisView() {
         )}
       </section>
 
-      {/* Pattern Matches (optional) */}
-      <section style={{ marginBottom: 30 }}>
+      {/* Pattern Matches */}
+      <section className="section">
         <h2>🛠️ Pattern Matches</h2>
         {pattern_results && Object.keys(pattern_results).length > 0 ? (
           Object.entries(pattern_results).map(([type, matches], idx) => (
-            <div key={idx} style={{ marginBottom: 20 }}>
+            <div key={idx} className="pattern-box">
               <h4>{type}</h4>
               <ul>
                 {matches.map((match, matchIdx) => (
                   <li key={matchIdx}>
                     <strong>Line {match.line}</strong>: {match.match}
-                    <pre style={{ background: '#efefef', padding: 8, borderRadius: 4 }}>{match.context}</pre>
+                    <pre className="code-snippet">{match.context}</pre>
                   </li>
                 ))}
               </ul>
@@ -107,35 +112,86 @@ function AnalysisView() {
         )}
       </section>
 
-      {/* Back Button */}
-      <div style={{ textAlign: 'center', marginTop: 40 }}>
-        <button
-          onClick={() => navigate('/')}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: 4,
-            cursor: 'pointer'
-          }}
-        >
-          🔙 Back to Upload
-        </button>
+      {/* Buttons */}
+      <div className="button-group">
+        <button className="btn btn-back" onClick={() => navigate('/')}>🔙 Back to Upload</button>
+        <button className="btn btn-question" onClick={() => setShowQuestionModal(true)}>❓ Ask a Security Question</button>
       </div>
+
+      {/* Modal */}
+      {showQuestionModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Ask a Security Question</h2>
+            <textarea
+              className="question-input"
+              value={securityQuestion}
+              onChange={(e) => setSecurityQuestion(e.target.value)}
+              placeholder="Type your question here..."
+            />
+
+            <div className="modal-actions">
+              <button
+                className="btn btn-submit"
+                onClick={async () => {
+                  setAnswerLoading(true);
+                  setAnswerError('');
+                  setAnswerChunks([]);
+
+                  try {
+                    const response = await fetch('http://localhost:5000/rag_explanation', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ query: securityQuestion })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.error) {
+                      setAnswerError(`❌ ${data.error}`);
+                    } else if (!data.chunks || data.chunks.length === 0) {
+                      setAnswerError('⚠️ No relevant information found.');
+                    } else {
+                      setAnswerChunks(data.chunks);
+                    }
+                  } catch (err) {
+                    setAnswerError('⚠️ Failed to connect to the server.');
+                  } finally {
+                    setAnswerLoading(false);
+                  }
+                }}
+              >
+                Submit
+              </button>
+              <button
+                className="btn btn-cancel"
+                onClick={() => {
+                  setShowQuestionModal(false);
+                  setSecurityQuestion('');
+                  setAnswerChunks([]);
+                  setAnswerError('');
+                  setAnswerLoading(false);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+
+            <div className="answer-section">
+              {answerLoading && <p>Loading...</p>}
+              {answerError && <p style={{ color: 'red' }}>{answerError}</p>}
+              {answerChunks.length > 0 &&
+                answerChunks.map((chunk, idx) => (
+                  <div key={idx} style={{ marginBottom: '15px', borderBottom: '1px solid #ccc' }}>
+                    {chunk}
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-const thStyle = {
-  padding: '10px',
-  textAlign: 'left',
-  borderBottom: '1px solid #ccc'
-};
-
-const tdStyle = {
-  padding: '10px',
-  borderBottom: '1px solid #eee'
-};
 
 export default AnalysisView;
